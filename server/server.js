@@ -1,14 +1,14 @@
 const express = require('express');
 const cors = require('cors');
 const mysql = require('mysql');
-const bcrypt = require('bcrypt');
+const bcrypt = require('bcryptjs'); // bcrypt-ku badhila bcryptjs use panrom
 const fs = require('fs');
 const path = require('path');
 const fetch = require('node-fetch');
 require('dotenv').config({ path: path.join(__dirname, '..', '.env') });
 
 const app = express();
-const PORT = process.env.PORT || 3000; // Render-kaga PORT variable-ah add panrom
+const PORT = process.env.PORT || 3000; 
 
 app.use(cors());
 app.use(express.json());
@@ -174,8 +174,6 @@ app.post('/api/signup', async (req, res) => {
         res.status(500).json({ message: 'Server error during signup.' });
     }
 });
-
-// Login route is already below
 
 // User progress route
 app.get('/api/progress/:userId/:stackId', async (req, res) => {
@@ -374,15 +372,7 @@ app.delete('/api/admin/pricing/:id', async (req, res) => {
 
 // --- END OF API ROUTES ---
 
-app.get('/api/stacks', async (req, res) => {
-    try {
-        const stacks = await runQuery('SELECT * FROM stacks');
-        res.json(parseStackDetails(stacks));
-    } catch (error) {
-        res.status(500).json({ message: 'Failed to fetch stacks.' });
-    }
-});
-
+// Login route
 app.post('/api/login', async (req, res) => {
     try {
         const { email, password } = req.body;
@@ -415,6 +405,16 @@ app.post('/api/login', async (req, res) => {
     }
 });
 
+// Stacks route
+app.get('/api/stacks', async (req, res) => {
+    try {
+        const stacks = await runQuery('SELECT * FROM stacks');
+        res.json(parseStackDetails(stacks));
+    } catch (error) {
+        res.status(500).json({ message: 'Failed to fetch stacks.' });
+    }
+});
+
 // Matra ella page requests-kum home.html-ah anuppurom
 app.get('*', (req, res) => {
     res.sendFile(path.join(clientPath, 'home.html'));
@@ -425,5 +425,4 @@ app.get('*', (req, res) => {
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
 });
-
 
