@@ -1,10 +1,10 @@
 {
   "name": "ai-career-guide-project",
   "version": "1.0.0",
-  "description": "Full stack AI Career Guide with Netlify Functions",
+  "description": "Full stack AI Career Guide Project",
   "main": "server/server.js",
   "scripts": {
-    "start": "netlify dev",
+    "start": "node server/server.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
@@ -16,8 +16,7 @@
     "dotenv": "^16.4.5",
     "express": "^4.19.2",
     "mysql": "^2.18.1",
-    "node-fetch": "^2.7.0",
-    "serverless-http": "^3.2.0"
+    "node-fetch": "^2.7.0"
   }
 }
 
