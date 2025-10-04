@@ -3,13 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Dashboard - Robiz Route Ai</title>
-    <link rel="icon" type="image/png" href="../img/RR.png">
+    <title>Admin Dashboard - AI Career Guide</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://unpkg.com/lucide-icons@latest/dist/lucide.js"></script>
-    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
     <style>
         body { font-family: 'Inter', sans-serif; background-color: #0F172A; color: #E2E8F0; }
         .stat-card { background-color: #1E293B; border: 1px solid #334155; }
@@ -131,15 +129,16 @@
 
     <div id="plan-modal" class="fixed inset-0 modal-bg flex items-center justify-center hidden z-50">
          <div class="modal-content p-8 rounded-lg w-full max-w-lg border border-slate-700">
-             <h2 class="text-2xl font-bold mb-6">Create New Plan</h2>
+             <h2 id="plan-modal-title" class="text-2xl font-bold mb-6">Create New Plan</h2>
              <form id="plan-form" class="space-y-4">
+                <input type="hidden" id="plan-edit-id">
                 <input type="text" id="plan-name" placeholder="Plan Name" class="w-full bg-slate-700 rounded p-2" required>
                 <input type="number" id="plan-price" placeholder="Price (e.g., 499)" class="w-full bg-slate-700 rounded p-2" required>
                 <input type="text" id="plan-type" placeholder="Type (e.g., Monthly, Lifetime)" class="w-full bg-slate-700 rounded p-2" required>
                 <textarea id="plan-features" placeholder="Features (one per line)" class="w-full bg-slate-700 rounded p-2" required></textarea>
                 <div class="flex justify-end gap-4 mt-6">
                     <button type="button" class="close-modal bg-slate-600 px-4 py-2 rounded">Cancel</button>
-                    <button type="submit" class="bg-blue-600 px-4 py-2 rounded">Create</button>
+                    <button type="submit" class="bg-blue-600 px-4 py-2 rounded">Save</button>
                 </div>
             </form>
         </div>
@@ -148,14 +147,14 @@
     <div id="toast-container" class="fixed bottom-5 right-5 z-50"></div>
 
     <script>
-        // Use a self-invoking function to avoid polluting the global scope
         (function() {
-            // Wait for the DOM to be fully loaded before running any scripts
             document.addEventListener('DOMContentLoaded', () => {
                 const views = { dashboard: document.getElementById('dashboard-view'), users: document.getElementById('users-view'), courses: document.getElementById('courses-view'), pricing: document.getElementById('pricing-view'), };
                 const navLinks = { dashboard: document.getElementById('nav-dashboard'), users: document.getElementById('nav-users'), courses: document.getElementById('nav-courses'), pricing: document.getElementById('nav-pricing'), };
                 const pageTitle = document.getElementById('page-title');
                 let userStatusChart;
+
+                const API_BASE = '/api'; 
 
                 const showToast = (message, isSuccess = true) => {
                     const toastContainer = document.getElementById('toast-container');
@@ -187,7 +186,7 @@
 
                 const fetchAPI = async (url, options = {}) => {
                     try {
-                        const response = await fetch(url, options);
+                        const response = await fetch(`${API_BASE}${url}`, options);
                         if (!response.ok) {
                             const err = await response.json();
                             throw new Error(err.message || 'API request failed');
@@ -201,9 +200,8 @@
                     }
                 };
 
-                // Dashboard
                 const fetchDashboardStats = async () => {
-                    const data = await fetchAPI('/api/admin/dashboard');
+                    const data = await fetchAPI('/admin/dashboard');
                     if (!data) return;
                     document.getElementById('total-users').textContent = data.totalUsers;
                     document.getElementById('total-stacks').textContent = data.totalStacks;
@@ -231,10 +229,10 @@
                     });
                 };
 
-                // Users
                 const fetchUsers = async () => {
-                    const users = await fetchAPI('/api/admin/users');
+                    const users = await fetchAPI('/admin/users');
                     const tableBody = document.getElementById('users-table-body');
+                    if(!tableBody) return;
                     tableBody.innerHTML = '';
                     if (!users || users.length === 0) {
                         tableBody.innerHTML = '<tr><td colspan="5" class="text-center p-8 text-slate-400">No users found.</td></tr>';
@@ -253,33 +251,11 @@
                         tableBody.appendChild(row);
                     });
                 };
-                document.getElementById('select-all-users').addEventListener('change', (e) => {
-                    document.querySelectorAll('.user-checkbox').forEach(checkbox => checkbox.checked = e.target.checked);
-                });
-                const userActionsBtn = document.getElementById('user-actions-btn');
-                const userActionsDropdown = document.getElementById('user-actions-dropdown');
-                userActionsBtn.addEventListener('click', () => userActionsDropdown.classList.toggle('hidden'));
-                userActionsDropdown.addEventListener('click', async (e) => {
-                    e.preventDefault();
-                    const action = e.target.dataset.action;
-                    if (!action) return;
-                    const selectedIds = [...document.querySelectorAll('.user-checkbox:checked')].map(cb => cb.dataset.id);
-                    if (selectedIds.length === 0) return showToast('No users selected.', false);
-                    
-                    const endpoint = action === 'delete' ? '/api/admin/users/delete' : '/api/admin/users/update-status';
-                    const body = action === 'delete' ? { userIds: selectedIds } : { userIds: selectedIds, status: action };
-                    
-                    const result = await fetchAPI(endpoint, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
-                    if (result) { showToast(result.message); fetchUsers(); }
-                    userActionsDropdown.classList.add('hidden');
-                });
-
-
-                // Courses
-                const stackModal = document.getElementById('stack-modal');
+                
                 const fetchStacks = async () => {
-                    const stacks = await fetchAPI('/api/admin/stacks');
+                    const stacks = await fetchAPI('/admin/stacks');
                     const container = document.getElementById('stacks-container');
+                    if(!container) return;
                     container.innerHTML = '';
                      if (!stacks || stacks.length === 0) {
                         container.innerHTML = '<p class="text-center p-8 text-slate-400">No courses found. Add one to get started!</p>';
@@ -295,6 +271,7 @@
                             </div>
                             <div class="flex gap-2">
                                 <button class="edit-stack-btn p-2 hover:bg-slate-600 rounded" data-id="${stack.id}"><i class="w-4 h-4" data-lucide="edit"></i></button>
+                                <button class="duplicate-stack-btn p-2 hover:bg-slate-600 rounded" data-id="${stack.id}"><i class="w-4 h-4" data-lucide="copy"></i></button>
                                 <button class="delete-stack-btn p-2 hover:bg-red-500/80 rounded" data-id="${stack.id}"><i class="w-4 h-4" data-lucide="trash"></i></button>
                             </div>
                         `;
@@ -302,63 +279,11 @@
                     });
                     lucide.createIcons();
                 };
-                document.getElementById('add-stack-btn').addEventListener('click', () => {
-                    document.getElementById('stack-form').reset();
-                    document.getElementById('stack-edit-id').value = '';
-                    document.getElementById('stack-id').disabled = false;
-                    document.getElementById('stack-modal-title').textContent = 'Add New Course';
-                    stackModal.classList.remove('hidden');
-                });
-                document.getElementById('stacks-container').addEventListener('click', async (e) => {
-                    const editBtn = e.target.closest('.edit-stack-btn');
-                    const deleteBtn = e.target.closest('.delete-stack-btn');
-                    if (editBtn) {
-                        const stacks = await fetchAPI('/api/admin/stacks');
-                        if (!stacks) return;
-                        const stack = stacks.find(s => s.id === editBtn.dataset.id);
-                        if (stack) {
-                            document.getElementById('stack-edit-id').value = stack.id;
-                            document.getElementById('stack-id').value = stack.id;
-                            document.getElementById('stack-id').disabled = true;
-                            document.getElementById('stack-name').value = stack.name;
-                            document.getElementById('stack-description').value = stack.description;
-                            document.getElementById('stack-details').value = JSON.stringify(stack.details, null, 2);
-                            document.getElementById('stack-modal-title').textContent = 'Edit Course';
-                            stackModal.classList.remove('hidden');
-                        }
-                    }
-                    if (deleteBtn) {
-                        if (confirm('Are you sure you want to delete this course? This action cannot be undone.')) {
-                            const result = await fetchAPI(`/api/admin/stacks/${deleteBtn.dataset.id}`, { method: 'DELETE' });
-                            if (result) { showToast(result.message); fetchStacks(); }
-                        }
-                    }
-                });
-                document.getElementById('stack-form').addEventListener('submit', async (e) => {
-                    e.preventDefault();
-                    const editId = document.getElementById('stack-edit-id').value;
-                    let details;
-                    try {
-                        details = {
-                            id: document.getElementById('stack-id').value,
-                            name: document.getElementById('stack-name').value,
-                            description: document.getElementById('stack-description').value,
-                            details: JSON.parse(document.getElementById('stack-details').value)
-                        };
-                    } catch(err) {
-                        return showToast('Invalid JSON in details field.', false);
-                    }
-                    const url = editId ? `/api/admin/stacks/${editId}` : '/api/admin/stacks';
-                    const method = editId ? 'PUT' : 'POST';
-                    const result = await fetchAPI(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(details) });
-                    if (result) { showToast(result.message); fetchStacks(); stackModal.classList.add('hidden'); }
-                });
 
-                // Pricing
-                const planModal = document.getElementById('plan-modal');
                 const fetchPricing = async () => {
-                    const plans = await fetchAPI('/api/admin/pricing');
+                    const plans = await fetchAPI('/admin/pricing');
                     const tableBody = document.getElementById('pricing-table-body');
+                    if(!tableBody) return;
                     tableBody.innerHTML = '';
                     if (!plans || plans.length === 0) {
                         tableBody.innerHTML = '<tr><td colspan="5" class="text-center p-8 text-slate-400">No pricing plans found.</td></tr>';
@@ -380,27 +305,106 @@
                     });
                     lucide.createIcons();
                 };
-                document.getElementById('add-plan-btn').addEventListener('click', () => {
+
+                document.getElementById('user-actions-btn')?.addEventListener('click', () => document.getElementById('user-actions-dropdown').classList.toggle('hidden'));
+                document.getElementById('user-actions-dropdown')?.addEventListener('click', async (e) => {
+                    e.preventDefault();
+                    const action = e.target.dataset.action;
+                    if (!action) return;
+                    const selectedIds = [...document.querySelectorAll('.user-checkbox:checked')].map(cb => cb.dataset.id);
+                    if (selectedIds.length === 0) return showToast('No users selected.', false);
+                    
+                    const endpoint = action === 'delete' ? '/admin/users/delete' : '/admin/users/update-status';
+                    const body = action === 'delete' ? { userIds: selectedIds } : { userIds: selectedIds, status: action };
+                    
+                    const result = await fetchAPI(endpoint, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+                    if (result) { showToast(result.message); fetchUsers(); }
+                    document.getElementById('user-actions-dropdown').classList.add('hidden');
+                });
+                document.getElementById('select-all-users')?.addEventListener('change', (e) => {
+                    document.querySelectorAll('.user-checkbox').forEach(checkbox => checkbox.checked = e.target.checked);
+                });
+
+                const stackModal = document.getElementById('stack-modal');
+                document.getElementById('add-stack-btn')?.addEventListener('click', () => {
+                    document.getElementById('stack-form').reset();
+                    document.getElementById('stack-edit-id').value = '';
+                    document.getElementById('stack-id').disabled = false;
+                    document.getElementById('stack-modal-title').textContent = 'Add New Course';
+                    stackModal.classList.remove('hidden');
+                });
+                document.getElementById('stacks-container')?.addEventListener('click', async (e) => {
+                    const editBtn = e.target.closest('.edit-stack-btn');
+                    const deleteBtn = e.target.closest('.delete-stack-btn');
+                    const duplicateBtn = e.target.closest('.duplicate-stack-btn');
+                    if (editBtn) {
+                        const stacks = await fetchAPI('/admin/stacks');
+                        if (!stacks) return;
+                        const stack = stacks.find(s => s.id === editBtn.dataset.id);
+                        if (stack) {
+                            document.getElementById('stack-edit-id').value = stack.id;
+                            document.getElementById('stack-id').value = stack.id;
+                            document.getElementById('stack-id').disabled = true;
+                            document.getElementById('stack-name').value = stack.name;
+                            document.getElementById('stack-description').value = stack.description;
+                            document.getElementById('stack-details').value = JSON.stringify(stack.details, null, 2);
+                            document.getElementById('stack-modal-title').textContent = 'Edit Course';
+                            stackModal.classList.remove('hidden');
+                        }
+                    }
+                    if (deleteBtn) {
+                        if (confirm('Are you sure you want to delete this course?')) {
+                            const result = await fetchAPI(`/admin/stacks/${deleteBtn.dataset.id}`, { method: 'DELETE' });
+                            if (result) { showToast(result.message); fetchStacks(); }
+                        }
+                    }
+                     if (duplicateBtn) {
+                        if (confirm('Are you sure you want to duplicate this course?')) {
+                            const result = await fetchAPI(`/admin/stacks/duplicate`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({id: duplicateBtn.dataset.id}) });
+                            if (result) { showToast(result.message); fetchStacks(); }
+                        }
+                    }
+                });
+                 document.getElementById('stack-form')?.addEventListener('submit', async (e) => {
+                    e.preventDefault();
+                    const editId = document.getElementById('stack-edit-id').value;
+                    let details;
+                    try {
+                        details = {
+                            id: document.getElementById('stack-id').value,
+                            name: document.getElementById('stack-name').value,
+                            description: document.getElementById('stack-description').value,
+                            details: JSON.parse(document.getElementById('stack-details').value)
+                        };
+                    } catch(err) { return showToast('Invalid JSON in details field.', false); }
+                    const url = editId ? `/admin/stacks/${editId}` : '/admin/stacks';
+                    const method = editId ? 'PUT' : 'POST';
+                    const result = await fetchAPI(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(details) });
+                    if (result) { showToast(result.message); fetchStacks(); stackModal.classList.add('hidden'); }
+                });
+
+
+                const planModal = document.getElementById('plan-modal');
+                document.getElementById('add-plan-btn')?.addEventListener('click', () => {
                     document.getElementById('plan-form').reset();
                     planModal.classList.remove('hidden');
-
                 });
-                document.getElementById('pricing-table-body').addEventListener('click', async (e) => {
+                document.getElementById('pricing-table-body')?.addEventListener('click', async (e) => {
                      const toggleBtn = e.target.closest('.toggle-plan-status');
                      const deleteBtn = e.target.closest('.delete-plan-btn');
                      if(toggleBtn){
                         const newStatus = toggleBtn.dataset.status === 'enabled' ? 'disabled' : 'enabled';
-                        const result = await fetchAPI(`/api/admin/pricing/${toggleBtn.dataset.id}/status`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ status: newStatus }) });
+                        const result = await fetchAPI(`/admin/pricing/${toggleBtn.dataset.id}/status`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ status: newStatus }) });
                         if(result) { showToast(result.message); fetchPricing(); }
                      }
                      if(deleteBtn){
                         if(confirm('Are you sure you want to delete this plan?')){
-                            const result = await fetchAPI(`/api/admin/pricing/${deleteBtn.dataset.id}`, { method: 'DELETE' });
+                            const result = await fetchAPI(`/admin/pricing/${deleteBtn.dataset.id}`, { method: 'DELETE' });
                             if(result) { showToast(result.message); fetchPricing(); }
                         }
                      }
                 });
-                document.getElementById('plan-form').addEventListener('submit', async (e) => {
+                 document.getElementById('plan-form')?.addEventListener('submit', async (e) => {
                     e.preventDefault();
                     const plan = {
                         name: document.getElementById('plan-name').value,
@@ -408,18 +412,16 @@
                         type: document.getElementById('plan-type').value,
                         features: document.getElementById('plan-features').value.split('\n').filter(f => f.trim())
                     };
-                    const result = await fetchAPI('/api/admin/pricing', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(plan) });
+                    const result = await fetchAPI('/admin/pricing', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(plan) });
                     if (result) { showToast(result.message); fetchPricing(); planModal.classList.add('hidden'); }
                 });
                 
-                // General
                 document.querySelectorAll('.close-modal').forEach(btn => btn.addEventListener('click', () => {
                     stackModal.classList.add('hidden');
                     planModal.classList.add('hidden');
                 }));
                 document.getElementById('logout-btn').addEventListener('click', () => { sessionStorage.clear(); window.location.href = '/login.html'; });
                 
-                // Initial Load
                 lucide.createIcons();
                 switchView('dashboard');
             });
@@ -427,4 +429,3 @@
     </script>
 </body>
 </html>
-

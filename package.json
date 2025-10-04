@@ -1,11 +1,11 @@
 {
-  "name": "ai-career-guide-server",
+  "name": "ai-career-guide-project",
   "version": "1.0.0",
-  "description": "Backend for AI Career Guide",
-  "main": "server.js",
+  "description": "Full stack AI Career Guide with Netlify Functions",
+  "main": "server/server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node server.js"
+    "start": "netlify dev",
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
   "author": "",
@@ -13,10 +13,11 @@
   "dependencies": {
     "bcrypt": "^5.1.1",
     "cors": "^2.8.5",
-    "dotenv": "^17.2.3",
+    "dotenv": "^16.4.5",
     "express": "^4.19.2",
     "mysql": "^2.18.1",
-    "mysql2": "^3.15.1",
-    "node-fetch": "^2.7.0"
+    "node-fetch": "^2.7.0",
+    "serverless-http": "^3.2.0"
   }
 }
+

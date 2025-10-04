@@ -85,3 +85,10 @@ For production environments, it is highly recommended to use environment variabl
 3.  Open your web browser and go to `http://localhost:3000` to access the application.
 
 ## Project Structure
+
+
+ host: 'gateway01.ap-southeast-1.prod.aws.tidbcloud.com',
+    port: 4000,
+    user: '4RdRyRGHpMek4m9.root',
+    password: 'JZaaDLqIEZiCla7I',
+    database: 'ai_career_guide_db',

@@ -3,14 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Learning Stacks - Robiz Route Ai</title>
-    <link rel="icon" type="image/png" href="../img/RR.png">
+    <title>Learning Stacks - AI Career Guide</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/lucide-icons@latest/dist/lucide.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
-    
     <style>
         body { font-family: 'Inter', sans-serif; background-color: #0F172A; color: #E2E8F0; }
         .gradient-text { background: linear-gradient(90deg, #60A5FA, #A78BFA); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
@@ -20,6 +17,83 @@
         .loader { border: 4px solid #334155; border-top: 4px solid #60A5FA; border-radius: 50%; width: 32px; height: 32px; animation: spin 1s linear infinite; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         .prose-invert a { color: #60a5fa; }
+        
+        /* Puthu Code Editor Styles */
+        .code-editor-container {
+            position: relative;
+            display: flex;
+            background-color: #020617;
+            border-radius: 0.5rem;
+            border: 1px solid #334155;
+            overflow: hidden;
+        }
+        .line-numbers {
+            padding: 1rem;
+            font-family: 'Fira Code', monospace;
+            font-size: 0.875rem;
+            color: #64748b;
+            text-align: right;
+            user-select: none;
+            background-color: #0f172a;
+            border-right: 1px solid #334155;
+            line-height: 1.5rem;
+        }
+        .line-numbers span {
+            display: block;
+        }
+        .code-input {
+            width: 100%;
+            height: 15rem; /* 240px */
+            background: transparent;
+            color: #e2e8f0;
+            font-family: 'Fira Code', monospace;
+            font-size: 0.875rem;
+            border: none;
+            outline: none;
+            padding: 1rem;
+            resize: vertical;
+            white-space: pre;
+            overflow-wrap: normal;
+            overflow-x: auto;
+            line-height: 1.5rem; /* Line height match pannanum */
+        }
+
+        /* Puthu Analysis Animation Styles */
+        .analysis-overlay {
+            position: absolute;
+            inset: 0;
+            background-color: rgba(2, 6, 23, 0.7);
+            backdrop-filter: blur(2px);
+            z-index: 10;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            border-radius: 0.5rem;
+            color: #94a3b8;
+        }
+        .scanner-line {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: rgba(99, 102, 241, 0.8);
+            box-shadow: 0 0 15px rgba(99, 102, 241, 1);
+            animation: scan 2.5s ease-in-out forwards;
+        }
+        @keyframes scan {
+            from { top: 0; }
+            to { top: 100%; }
+        }
+        .analysis-text-spinner {
+            width: 1.25rem;
+            height: 1.25rem;
+            border: 2px solid #64748b;
+            border-top-color: #60a5fa;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
     </style>
 </head>
 <body class="animated-gradient-bg antialiased">
@@ -30,14 +104,14 @@
              <div class="bg-black/30 backdrop-blur-lg border border-slate-800 rounded-full p-2 flex justify-between items-center">
                 <a href="/home.html" class="flex items-center gap-2 text-white pl-2 flex-shrink-0">
                     <div class="w-9 h-9 bg-violet-600 rounded-full logo-pulse flex items-center justify-center font-bold text-sm flex-shrink-0">RR</div>
-                    <span class="text-lg font-bold sm:inline">Robiz Route Ai</span>
+                    <span class="text-lg font-bold hidden sm:inline">Robiz Route Ai</span>
                 </a>
                 
                 <div class="flex items-center">
                     <nav class="hidden md:flex items-center gap-6 text-slate-300 mr-4">
-                        <a href="/home.html" class="text-white font-semibold">Home</a>
+                        <a href="/home.html" class="hover:text-white transition-colors">Home</a>
                         <a href="/features.html" class="hover:text-white transition-colors">Features</a>
-                        <a href="/stacks.html" class="hover:text-white transition-colors">Stacks</a>
+                        <a href="/stacks.html" class="text-white font-semibold transition-colors">Stacks</a>
                         <a href="/pricing.html" class="hover:text-white transition-colors">Pricing</a>
                         <a href="/contact.html" class="hover:text-white transition-colors">Contact</a>
                     </nav>
@@ -84,6 +158,8 @@
 
                 const views = { grid: document.getElementById('stacks-grid-view'), modules: document.getElementById('stack-modules-view'), video: document.getElementById('module-video-view'), detail: document.getElementById('stack-detail-view') };
                 
+                const API_BASE = '/api';
+
                 const setupHeader = () => {
                     const authLinks = document.getElementById('auth-links');
                     const profileContainer = document.getElementById('profile-container');
@@ -95,6 +171,9 @@
                         authLinks.classList.add('hidden');
                         profileContainer.classList.remove('hidden');
                         profileBtn.textContent = userName.charAt(0).toUpperCase();
+                    } else {
+                        authLinks.classList.remove('hidden');
+                        profileContainer.classList.add('hidden');
                     }
                     
                     if(profileBtn) profileBtn.addEventListener('click', () => profileDropdown.classList.toggle('hidden'));
@@ -108,11 +187,12 @@
                     setupHeader();
                     renderStacksGrid();
                     try {
-                        const response = await fetch('/api/stacks');
+                        const response = await fetch(`${API_BASE}/stacks`);
                         if (!response.ok) throw new Error('Failed to fetch stacks');
                         allStacksData = await response.json();
                         renderStacksGrid(allStacksData);
                     } catch (error) {
+                        console.error('Initialization error:', error);
                         views.grid.innerHTML = `<p class="text-center text-red-400 py-20">Could not load courses. Please try again later.</p>`;
                     }
                 };
@@ -120,7 +200,7 @@
                 const renderStacksGrid = (stacks = []) => {
                     let content = stacks.length === 0 ? '<div class="loader mx-auto"></div>' : stacks.map(stack => `
                         <div class="bg-slate-800/50 p-6 rounded-2xl border border-slate-700 flex flex-col hover:border-blue-500 transition-colors">
-                             <img src="${stack.details.image}" alt="${stack.name}" class="rounded-lg mb-4 h-40 object-cover">
+                             <img src="${(stack.details && stack.details.image) || 'https://placehold.co/600x400/0f172a/a78bfa?text=Course'}" alt="${stack.name}" class="rounded-lg mb-4 h-40 object-cover">
                             <h2 class="text-2xl font-bold text-white">${stack.name}</h2>
                             <p class="text-slate-400 mb-4 flex-grow">${stack.description}</p>
                             <button class="stack-btn w-full mt-auto bg-blue-500 text-white font-semibold py-2 rounded-lg hover:bg-blue-600" data-stack-id="${stack.id}">Start Learning</button>
@@ -132,13 +212,23 @@
 
                 const renderModulesView = async (stackId) => {
                     currentStack = allStacksData.find(s => s.id === stackId);
-                    if (!currentStack) return;
+                    if (!currentStack || !currentStack.details) return;
                      if (isLoggedIn) {
-                        const progressData = await (await fetch(`/api/progress/${userId}/${stackId}`)).json();
-                        userProgress = progressData.progress || [];
+                        try {
+                            const response = await fetch(`${API_BASE}/progress/${userId}/${stackId}`);
+                            if(response.ok) {
+                                const progressData = await response.json();
+                                userProgress = progressData.progress || [];
+                            } else {
+                                userProgress = [];
+                            }
+                        } catch(e) {
+                            userProgress = [];
+                            console.error("Could not fetch progress", e);
+                        }
                     }
-                    const modulesContent = currentStack.details.modules.map((module, index) => {
-                        const isModuleCompleted = module.curriculum.every(day => day.tasks.every((_, taskIndex) => userProgress.some(p => p.module_id === module.id && p.day === day.day && p.task_index === taskIndex)));
+                    const modulesContent = (currentStack.details.modules || []).map((module, index) => {
+                        const isModuleCompleted = (module.curriculum || []).every(day => (day.tasks || []).every((_, taskIndex) => userProgress.some(p => p.module_id === module.id && p.day === day.day && p.task_index === taskIndex)));
                         return `<div class="module-card bg-slate-800/50 p-6 rounded-2xl border border-l-4 ${isModuleCompleted ? 'border-l-green-500' : 'border-l-slate-600'} cursor-pointer hover:border-blue-500" data-module-id="${module.id}">
                                     <h3 class="text-xl font-bold pointer-events-none">${module.title}</h3>
                                 </div>`;
@@ -151,7 +241,7 @@
                 };
                 
                 const renderVideoView = (moduleId) => {
-                    currentModule = currentStack.details.modules.find(m => m.id === moduleId);
+                    currentModule = (currentStack.details.modules || []).find(m => m.id === moduleId);
                     if(!currentModule) return;
                     views.video.innerHTML = `<section class="py-12"><div class="container mx-auto px-6 max-w-4xl">
                         <button class="back-to-modules-btn flex items-center gap-2 text-slate-400 hover:text-white mb-8"><i data-lucide="arrow-left"></i> Back to Modules</button>
@@ -166,7 +256,7 @@
                 };
 
                 const renderDetailView = (moduleId) => {
-                    currentModule = currentStack.details.modules.find(m => m.id === moduleId);
+                    currentModule = (currentStack.details.modules || []).find(m => m.id === moduleId);
                     if(!currentModule) return;
                     views.detail.innerHTML = `<section class="py-12"><div class="container mx-auto px-6"><button class="back-to-modules-btn flex items-center gap-2 text-slate-400 hover:text-white mb-8"><i data-lucide="arrow-left"></i> Back to Modules</button><div class="grid lg:grid-cols-12 gap-8"><div class="lg:col-span-4"><div class="bg-slate-800/50 p-6 rounded-2xl border border-slate-700 sticky top-28" id="curriculum-container"></div></div><div class="lg:col-span-8" id="day-content-container"></div></div></div></section>`;
                     renderCurriculumAndDay();
@@ -185,7 +275,7 @@
 
                     const firstDay = currentModule.curriculum[0];
                     const daysHTML = currentModule.curriculum.map(day => {
-                        const isDayCompleted = day.tasks.every((_, taskIndex) => userProgress.some(p => p.module_id === currentModule.id && p.day === day.day && p.task_index === taskIndex));
+                        const isDayCompleted = (day.tasks || []).every((_, taskIndex) => userProgress.some(p => p.module_id === currentModule.id && p.day === day.day && p.task_index === taskIndex));
                         return `<li><a href="#" class="day-link block p-3 rounded-lg border-l-4 ${isDayCompleted ? 'day-completed border-green-500' : 'border-slate-700'} hover:bg-slate-700 text-sm" data-day="${day.day}">Day ${day.day}</a></li>`;
                     }).join('');
 
@@ -195,12 +285,12 @@
                 };
 
                 const renderDayContent = (dayNumber) => {
-                    const dayData = currentModule.curriculum.find(d => d.day == dayNumber);
+                    const dayData = (currentModule.curriculum || []).find(d => d.day == dayNumber);
                     const container = views.detail.querySelector('#day-content-container');
                     if (!dayData) return;
 
                     let isPreviousTaskCompleted = true; 
-                    const tasksContent = dayData.tasks.map((task, taskIndex) => {
+                    const tasksContent = (dayData.tasks || []).map((task, taskIndex) => {
                         const isTaskCompleted = userProgress.some(p => p.module_id === currentModule.id && p.day == dayNumber && p.task_index === taskIndex);
                         const isLocked = !isPreviousTaskCompleted;
                         if (!isLocked) {
@@ -216,12 +306,25 @@
                             <div class="text-slate-400 mb-4 prose max-w-none prose-invert">${marked.parse(task.description || '')}</div>
                             ${!isTaskCompleted ? `
                             <form class="task-submission-form" data-day="${dayNumber}" data-task-index="${taskIndex}">
-                                <div class="bg-slate-900 rounded-lg p-2 mb-2"><textarea class="w-full h-40 bg-transparent text-slate-300 font-mono text-sm focus:outline-none p-2" placeholder="Your code here..."></textarea></div>
-                                <div class="flex items-center gap-4">
-                                    <button type="submit" class="bg-blue-600 text-white font-semibold py-2 px-6 rounded-lg hover:bg-blue-700">Submit Task</button>
+                                <label class="block text-sm font-medium text-slate-300 mb-2">Your Code</label>
+                                <div class="code-editor-container mb-4">
+                                    <div class="analysis-overlay hidden"></div>
+                                    <div class="line-numbers"><span>1</span></div>
+                                    <textarea class="code-input" placeholder="Your code here..."></textarea>
+                                </div>
+                                <div class="flex flex-wrap items-center gap-4">
+                                    <button type="submit" class="bg-blue-600 text-white font-semibold py-2 px-6 rounded-lg hover:bg-blue-700 flex items-center gap-2"><i data-lucide="send" class="w-4 h-4"></i> Submit Task</button>
+                                    <button type="button" class="run-code-btn bg-slate-600 text-white font-semibold py-2 px-6 rounded-lg hover:bg-slate-500 flex items-center gap-2"><i data-lucide="play" class="w-4 h-4"></i> Run Code</button>
                                     <button type="button" class="fill-solution-btn text-sm text-slate-400 hover:text-white">Fill Solution</button>
                                 </div>
                             </form>` : `<div class="p-4 bg-green-900/50 text-green-300 rounded-lg">Task Completed! You earned ${task.points || 10} points.</div>`}
+                            <div class="output-container mt-4 hidden">
+                                <div class="flex justify-between items-center mb-2">
+                                    <h4 class="font-semibold text-slate-300">Output Preview</h4>
+                                    <button class="close-output-btn text-slate-400 hover:text-white"><i data-lucide="x" class="w-5 h-5"></i></button>
+                                </div>
+                                <iframe class="w-full h-48 bg-white rounded-lg border border-slate-700"></iframe>
+                            </div>
                             <div class="ai-feedback-container mt-4 hidden"></div>
                         </div>`;
                     }).join('');
@@ -235,41 +338,110 @@
                     const activeLink = views.detail.querySelector(`.day-link[data-day="${dayNumber}"]`);
                     if(activeLink) activeLink.classList.add('day-active');
                     
-                    container.querySelectorAll('.task-submission-form').forEach(form => form.addEventListener('submit', e => { e.preventDefault(); submitTask(form); }));
+                    container.querySelectorAll('.task-submission-form').forEach(form => {
+                        const codeInput = form.querySelector('.code-input');
+                        const lineNumbers = form.querySelector('.line-numbers');
+                        
+                        const updateLineNumbers = () => {
+                            if(!codeInput || !lineNumbers) return;
+                            const lineCount = codeInput.value.split('\n').length;
+                            const lineNumbersHTML = Array.from({ length: lineCount }, (_, i) => `<span>${i + 1}</span>`).join('');
+                            lineNumbers.innerHTML = lineNumbersHTML;
+                            lineNumbers.scrollTop = codeInput.scrollTop;
+                        };
+
+                        codeInput.addEventListener('input', updateLineNumbers);
+                        codeInput.addEventListener('scroll', () => { 
+                            lineNumbers.scrollTop = codeInput.scrollTop;
+                        });
+                        updateLineNumbers();
+
+                        form.addEventListener('submit', e => { e.preventDefault(); submitTask(form); });
+                    });
+
+                    container.querySelectorAll('.run-code-btn').forEach(btn => {
+                        btn.addEventListener('click', (e) => {
+                            const form = e.target.closest('form');
+                            const code = form.querySelector('.code-input').value;
+                            const outputContainer = form.parentElement.querySelector('.output-container');
+                            const iframe = outputContainer.querySelector('iframe');
+                            iframe.srcdoc = code;
+                            outputContainer.classList.remove('hidden');
+                        });
+                    });
+
+                    container.querySelectorAll('.close-output-btn').forEach(btn => {
+                        btn.addEventListener('click', (e) => {
+                            e.target.closest('.output-container').classList.add('hidden');
+                        });
+                    });
+
                     container.querySelectorAll('.fill-solution-btn').forEach(btn => {
                         btn.addEventListener('click', (e) => {
                             const form = e.target.closest('form');
                             const taskIndex = form.dataset.taskIndex;
-                            const task = dayData.tasks[taskIndex];
-                            if(task.solution) {
-                                form.querySelector('textarea').value = task.solution;
+                            const task = (dayData.tasks || [])[taskIndex];
+                            if(task && task.solution) {
+                                const codeInput = form.querySelector('.code-input');
+                                codeInput.value = task.solution;
+                                // Trigger input event to update line numbers
+                                codeInput.dispatchEvent(new Event('input'));
                             }
                         });
                     });
+                };
+                
+                const showAnalysisAnimation = (form, show = true) => {
+                    const editorContainer = form.querySelector('.code-editor-container');
+                    const overlay = editorContainer.querySelector('.analysis-overlay');
+                    if (show) {
+                        overlay.classList.remove('hidden');
+                        overlay.innerHTML = `
+                            <div class="scanner-line"></div>
+                            <div class="flex items-center gap-3">
+                                <div class="analysis-text-spinner"></div>
+                                <p class="font-semibold text-lg">Analyzing your code...</p>
+                            </div>
+                        `;
+                    } else {
+                        overlay.classList.add('hidden');
+                    }
                 };
 
                 const submitTask = async (form) => {
                     const day = form.dataset.day;
                     const taskIndex = parseInt(form.dataset.taskIndex);
-                    const codeContent = form.querySelector('textarea').value;
+                    const codeContent = form.querySelector('.code-input').value;
                     const feedbackContainer = form.parentElement.querySelector('.ai-feedback-container');
-                    feedbackContainer.classList.remove('hidden');
-                    feedbackContainer.innerHTML = '<div class="loader mx-auto"></div>';
+                    
+                    showAnalysisAnimation(form, true);
+                    feedbackContainer.classList.add('hidden');
+
                     try {
-                         const response = await fetch('/api/submit-task', { 
+                         const response = await fetch(`${API_BASE}/submit-task`, { 
                             method: 'POST', 
                             headers: { 'Content-Type': 'application/json' },
                             body: JSON.stringify({ userId, stackId: currentStack.id, moduleId: currentModule.id, day, taskIndex, codeContent })
                         });
                         const result = await response.json();
+                        
+                        feedbackContainer.classList.remove('hidden');
                         feedbackContainer.innerHTML = `<div class="p-4 bg-slate-900 rounded-lg border border-slate-700 prose max-w-none prose-invert">${marked.parse(result.feedback)}</div>`;
+                        
                         if (result.status === 'approved') {
                             userProgress.push({ module_id: currentModule.id, day: parseInt(day), task_index: taskIndex });
-                            renderDayContent(day);
-                            renderCurriculumAndDay();
+                            // Wait a bit for user to read feedback before re-rendering
+                            setTimeout(() => {
+                                renderDayContent(day);
+                                renderCurriculumAndDay();
+                            }, 2000);
                         }
                     } catch (error) {
+                         console.error("Task submission error:", error);
+                         feedbackContainer.classList.remove('hidden');
                          feedbackContainer.innerHTML = `<div class="p-4 bg-red-900/50 text-red-300 rounded-lg">Error submitting task.</div>`;
+                    } finally {
+                        showAnalysisAnimation(form, false);
                     }
                 };
                 

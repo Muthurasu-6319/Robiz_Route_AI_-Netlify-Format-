@@ -3,12 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Profile - Robiz Route Ai</title>
-    <link rel="icon" type="image/png" href="../img/RR.png">
+    <title>My Profile - AI Career Guide</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/lucide-icons@latest/dist/lucide.js"></script>
-    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
     <style>
         body { font-family: 'Inter', sans-serif; background-color: #020617; color: #e2e8f0; }
         .progress-bar-bg { background-color: #1e293b; }
@@ -23,7 +21,7 @@
              <div class="bg-black/30 backdrop-blur-lg border border-slate-800 rounded-full p-2 flex justify-between items-center">
                 <a href="/home.html" class="flex items-center gap-2 text-white pl-2 flex-shrink-0">
                     <div class="w-9 h-9 bg-violet-600 rounded-full logo-pulse flex items-center justify-center font-bold text-sm flex-shrink-0">RR</div>
-                    <span class="text-lg font-bold sm:inline">Robiz Route Ai</span>
+                    <span class="text-lg font-bold hidden sm:inline">Robiz Route Ai</span>
                 </a>
                 
                 <div class="flex items-center">
@@ -128,6 +126,8 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', async () => {
+            const API_BASE = '/api'; 
+
             const setupHeader = () => {
                 const isLoggedIn = sessionStorage.getItem('isLoggedIn') === 'true';
                 const userName = sessionStorage.getItem('userName');
@@ -170,30 +170,28 @@
                 
                 if (mobileMenuBtn) {
                     mobileMenuBtn.addEventListener('click', () => {
-                        const mobileMenu = document.getElementById('mobile-menu');
                         if (mobileMenu.classList.contains('opacity-0')) {
                             mobileMenu.classList.remove('opacity-0', 'pointer-events-none');
-                            document.getElementById('menu-open-icon').classList.add('hidden');
-                            document.getElementById('menu-close-icon').classList.remove('hidden');
+                            menuOpenIcon.classList.add('hidden');
+                            menuCloseIcon.classList.remove('hidden');
                         } else {
                             mobileMenu.classList.add('opacity-0', 'pointer-events-none');
-                            document.getElementById('menu-open-icon').classList.remove('hidden');
-                            document.getElementById('menu-close-icon').classList.add('hidden');
+                            menuOpenIcon.classList.remove('hidden');
+                            menuCloseIcon.classList.add('hidden');
                         }
                     });
                 }
 
-
                 window.addEventListener('click', (e) => { 
-                    if (profileContainer && !profileContainer.contains(e.target)) {
-                        profileDropdown.classList.add('hidden');
+                    if (profileContainer && !profileContainer.contains(e.target) && mobileMenuBtn && !mobileMenuBtn.contains(e.target)) {
+                       if(profileDropdown) profileDropdown.classList.add('hidden');
                     }
                 });
             };
             setupHeader();
 
-            const isLoggedIn = sessionStorage.getItem('isLoggedIn') === 'true';
             const userId = sessionStorage.getItem('userId');
+            const isLoggedIn = sessionStorage.getItem('isLoggedIn') === 'true';
             
             if (!isLoggedIn || !userId) {
                 window.location.href = '/login.html';
@@ -204,13 +202,13 @@
             const profileContent = document.getElementById('profile-content');
 
             try {
-                const response = await fetch(`/api/profile/${userId}`);
+                const response = await fetch(`${API_BASE}/profile/${userId}`);
                 if (!response.ok) throw new Error('Failed to load profile.');
                 const data = await response.json();
 
                 document.getElementById('user-name').textContent = data.name;
                 document.getElementById('user-email').textContent = data.email;
-                document.getElementById('user-points').textContent = data.points;
+                document.getElementById('user-points').textContent = data.points || 0;
                 document.getElementById('profile-initials').textContent = data.name.charAt(0).toUpperCase();
 
                 const pendingContainer = document.getElementById('pending-courses-container');
@@ -258,3 +256,4 @@
     </script>
 </body>
 </html>
+
