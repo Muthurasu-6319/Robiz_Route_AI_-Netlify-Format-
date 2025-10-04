@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Profile - Robiz Route Ai</title>
+    <link rel="icon" type="image/png" href="../img/RR.png">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide-icons@latest/dist/lucide.js"></script>
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #020617; color: #e2e8f0; }
+        .progress-bar-bg { background-color: #1e293b; }
+        .progress-bar-fill { background: linear-gradient(90deg, #8b5cf6, #6366f1); transition: width 0.5s ease-in-out; }
+    </style>
+</head>
+<body class="animated-gradient-bg antialiased">
+
+    <!-- FINAL HEADER DESIGN -->
+    <header class="fixed top-0 left-0 right-0 w-full z-50 transition-all duration-300 pt-3 flex justify-center">
+        <div class="container mx-auto px-4 sm:px-6 max-w-6xl">
+             <div class="bg-black/30 backdrop-blur-lg border border-slate-800 rounded-full p-2 flex justify-between items-center">
+                <a href="/home.html" class="flex items-center gap-2 text-white pl-2 flex-shrink-0">
+                    <div class="w-9 h-9 bg-violet-600 rounded-full logo-pulse flex items-center justify-center font-bold text-sm flex-shrink-0">RR</div>
+                    <span class="text-lg font-bold sm:inline">Robiz Route Ai</span>
+                </a>
+                
+                <div class="flex items-center">
+                    <nav class="hidden md:flex items-center gap-6 text-slate-300 mr-4">
+                        <a href="/home.html" class="hover:text-white transition-colors">Home</a>
+                        <a href="/features.html" class="hover:text-white transition-colors">Features</a>
+                        <a href="/stacks.html" class="hover:text-white transition-colors">Stacks</a>
+                        <a href="/pricing.html" class="hover:text-white transition-colors">Pricing</a>
+                        <a href="/contact.html" class="hover:text-white transition-colors">Contact</a>
+                    </nav>
+
+                    <div class="hidden md:flex items-center gap-2">
+                        <div id="auth-links">
+                            <a href="/login.html" class="text-slate-300 font-medium hover:text-white px-4 py-2">Login</a>
+                            <a href="/signup.html" class="bg-gradient-to-r from-violet-600 to-indigo-600 text-white font-semibold px-4 py-2 rounded-full hover:opacity-90">Sign Up</a>
+                        </div>
+                        <div id="profile-container" class="hidden relative pr-2">
+                            <button id="profile-btn" class="w-10 h-10 bg-violet-600 rounded-full flex items-center justify-center text-white font-bold text-lg"></button>
+                            <div id="profile-dropdown" class="absolute hidden mt-2 top-full right-0 bg-slate-800 border border-slate-700 rounded-lg shadow-lg z-10 w-48">
+                                <a href="/profile.html" class="block px-4 py-2 text-sm text-slate-200 hover:bg-slate-700">My Profile</a>
+                                <a href="#" id="logout-btn" class="block px-4 py-2 text-sm text-red-400 hover:bg-slate-700">Logout</a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="md:hidden pr-1">
+                         <button id="mobile-menu-btn" class="w-10 h-10 flex items-center justify-center bg-violet-600 rounded-full text-white z-50 transform transition-transform duration-300 hover:scale-110">
+                            <i id="menu-open-icon" data-lucide="menu" class="w-6 h-6"></i>
+                            <i id="menu-close-icon" data-lucide="x" class="w-6 h-6 hidden"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+    
+    <!-- MODERN MOBILE MENU -->
+    <div id="mobile-menu" class="fixed inset-0 bg-black/80 backdrop-blur-lg z-40 flex flex-col items-center justify-center transition-opacity duration-300 ease-in-out opacity-0 pointer-events-none">
+        <nav class="flex flex-col items-center gap-8 text-2xl text-slate-200">
+            <a href="/home.html" class="hover:text-white transition-colors">Home</a>
+            <a href="/features.html" class="hover:text-white transition-colors">Features</a>
+            <a href="/stacks.html" class="hover:text-white transition-colors">Stacks</a>
+            <a href="/pricing.html" class="hover:text-white transition-colors">Pricing</a>
+            <a href="/contact.html" class="hover:text-white transition-colors">Contact</a>
+        </nav>
+        <div class="absolute bottom-10 w-full px-8">
+            <div id="mobile-auth-links" class="flex flex-col gap-3 border-t border-slate-800 pt-6">
+                 <a href="/signup.html" class="block w-full text-center bg-gradient-to-r from-violet-600 to-indigo-600 text-white font-semibold px-5 py-3 rounded-full hover:opacity-90">Sign Up</a>
+                 <a href="/login.html" class="block w-full text-center bg-slate-800 text-white font-semibold px-5 py-3 rounded-full hover:bg-slate-700">Login</a>
+            </div>
+            <div id="mobile-profile-links" class="hidden flex flex-col gap-3 border-t border-slate-800 pt-6">
+                 <a href="/profile.html" class="block w-full text-center bg-slate-700 text-white font-semibold px-5 py-3 rounded-full hover:bg-slate-600">My Profile</a>
+                 <a href="#" id="mobile-logout-btn" class="block w-full text-center bg-red-600/50 text-white font-semibold px-5 py-3 rounded-full hover:bg-red-600/70">Logout</a>
+            </div>
+        </div>
+    </div>
+
+
+    <main class="pt-32 container mx-auto px-6 py-12">
+        <div id="loading-state" class="text-center py-20">
+            <p>Loading Profile...</p>
+        </div>
+        
+        <div id="profile-content" class="hidden">
+            <div class="flex flex-col md:flex-row items-center gap-6 mb-12">
+                <div id="profile-initials" class="w-24 h-24 bg-gradient-to-br from-violet-600 to-indigo-600 rounded-full flex items-center justify-center text-white font-bold text-4xl border-4 border-slate-800"></div>
+                <div>
+                    <h1 id="user-name" class="text-4xl font-extrabold text-white text-center md:text-left"></h1>
+                    <p id="user-email" class="text-slate-400 text-lg text-center md:text-left"></p>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
+                <div class="bg-slate-900/50 p-6 rounded-2xl border border-slate-800">
+                    <div class="flex items-center gap-3 mb-2">
+                        <i data-lucide="gem" class="w-6 h-6 text-yellow-400"></i>
+                        <h2 class="text-xl font-semibold text-white">Earning Points</h2>
+                    </div>
+                    <p id="user-points" class="text-5xl font-bold text-yellow-400">0</p>
+                </div>
+                <div class="bg-slate-900/50 p-6 rounded-2xl border border-slate-800">
+                    <div class="flex items-center gap-3 mb-2">
+                        <i data-lucide="award" class="w-6 h-6 text-green-400"></i>
+                        <h2 class="text-xl font-semibold text-white">Rewards</h2>
+                    </div>
+                    <p class="text-slate-400 mt-2">Unlock rewards as you learn! (Coming Soon)</p>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-10">
+                <div>
+                    <h2 class="text-2xl font-bold text-white mb-6">In Progress Courses</h2>
+                    <div id="pending-courses-container" class="space-y-4"></div>
+                </div>
+                <div>
+                    <h2 class="text-2xl font-bold text-white mb-6">Completed Courses</h2>
+                    <div id="completed-courses-container" class="space-y-4"></div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            const setupHeader = () => {
+                const isLoggedIn = sessionStorage.getItem('isLoggedIn') === 'true';
+                const userName = sessionStorage.getItem('userName');
+                const authLinks = document.getElementById('auth-links');
+                const profileContainer = document.getElementById('profile-container');
+                const profileBtn = document.getElementById('profile-btn');
+                const profileDropdown = document.getElementById('profile-dropdown');
+                const logoutBtn = document.getElementById('logout-btn');
+                const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+                const mobileMenu = document.getElementById('mobile-menu');
+                const menuOpenIcon = document.getElementById('menu-open-icon');
+                const menuCloseIcon = document.getElementById('menu-close-icon');
+                const mobileAuthLinks = document.getElementById('mobile-auth-links');
+                const mobileProfileLinks = document.getElementById('mobile-profile-links');
+                const mobileLogoutBtn = document.getElementById('mobile-logout-btn');
+
+                if (isLoggedIn && userName) {
+                    if(authLinks) authLinks.classList.add('hidden');
+                    if(profileContainer) profileContainer.classList.remove('hidden');
+                    if(profileBtn) profileBtn.textContent = userName.charAt(0).toUpperCase();
+                    if(mobileAuthLinks) mobileAuthLinks.classList.add('hidden');
+                    if(mobileProfileLinks) mobileProfileLinks.classList.remove('hidden');
+                } else {
+                    if(authLinks) authLinks.classList.remove('hidden');
+                    if(profileContainer) profileContainer.classList.add('hidden');
+                    if(mobileAuthLinks) mobileAuthLinks.classList.remove('hidden');
+                    if(mobileProfileLinks) mobileProfileLinks.classList.add('hidden');
+                }
+                
+                if(profileBtn) profileBtn.addEventListener('click', () => profileDropdown.classList.toggle('hidden'));
+                
+                const handleLogout = (e) => {
+                    e.preventDefault();
+                    sessionStorage.clear();
+                    window.location.href = '/login.html';
+                };
+                
+                if(logoutBtn) logoutBtn.addEventListener('click', handleLogout);
+                if(mobileLogoutBtn) mobileLogoutBtn.addEventListener('click', handleLogout);
+                
+                if (mobileMenuBtn) {
+                    mobileMenuBtn.addEventListener('click', () => {
+                        const mobileMenu = document.getElementById('mobile-menu');
+                        if (mobileMenu.classList.contains('opacity-0')) {
+                            mobileMenu.classList.remove('opacity-0', 'pointer-events-none');
+                            document.getElementById('menu-open-icon').classList.add('hidden');
+                            document.getElementById('menu-close-icon').classList.remove('hidden');
+                        } else {
+                            mobileMenu.classList.add('opacity-0', 'pointer-events-none');
+                            document.getElementById('menu-open-icon').classList.remove('hidden');
+                            document.getElementById('menu-close-icon').classList.add('hidden');
+                        }
+                    });
+                }
+
+
+                window.addEventListener('click', (e) => { 
+                    if (profileContainer && !profileContainer.contains(e.target)) {
+                        profileDropdown.classList.add('hidden');
+                    }
+                });
+            };
+            setupHeader();
+
+            const isLoggedIn = sessionStorage.getItem('isLoggedIn') === 'true';
+            const userId = sessionStorage.getItem('userId');
+            
+            if (!isLoggedIn || !userId) {
+                window.location.href = '/login.html';
+                return;
+            }
+
+            const loadingState = document.getElementById('loading-state');
+            const profileContent = document.getElementById('profile-content');
+
+            try {
+                const response = await fetch(`/api/profile/${userId}`);
+                if (!response.ok) throw new Error('Failed to load profile.');
+                const data = await response.json();
+
+                document.getElementById('user-name').textContent = data.name;
+                document.getElementById('user-email').textContent = data.email;
+                document.getElementById('user-points').textContent = data.points;
+                document.getElementById('profile-initials').textContent = data.name.charAt(0).toUpperCase();
+
+                const pendingContainer = document.getElementById('pending-courses-container');
+                const completedContainer = document.getElementById('completed-courses-container');
+                
+                if(!data.pending_courses || data.pending_courses.length === 0) {
+                    pendingContainer.innerHTML = `<p class="text-slate-400">No courses in progress. Go to the Stacks page to start learning!</p>`;
+                } else {
+                    pendingContainer.innerHTML = data.pending_courses.map(course => createCourseCard(course)).join('');
+                }
+
+                if(!data.completed_courses || data.completed_courses.length === 0) {
+                    completedContainer.innerHTML = `<p class="text-slate-400">You haven't completed any courses yet.</p>`;
+                } else {
+                    completedContainer.innerHTML = data.completed_courses.map(course => createCourseCard(course)).join('');
+                }
+                
+                loadingState.classList.add('hidden');
+                profileContent.classList.remove('hidden');
+                lucide.createIcons();
+
+            } catch (error) {
+                console.error(error);
+                loadingState.innerHTML = `<p class="text-red-400">Could not load profile. Please try again later.</p>`;
+            }
+        });
+
+        function createCourseCard(course) {
+            const percentage = course.totalTasks > 0 ? Math.round((course.completedTasks / course.totalTasks) * 100) : 0;
+            const isCompleted = percentage === 100;
+
+            return `
+                <a href="/stacks.html" class="block bg-slate-900/50 p-5 rounded-xl border border-slate-800 hover:border-violet-700 transition-colors">
+                    <div class="flex justify-between items-center mb-3">
+                        <h3 class="font-bold text-lg text-white">${course.name}</h3>
+                        <span class="text-sm font-semibold ${isCompleted ? 'text-green-400' : 'text-violet-400'}">${percentage}%</span>
+                    </div>
+                    <div class="w-full progress-bar-bg rounded-full h-2.5">
+                        <div class="progress-bar-fill h-2.5 rounded-full" style="width: ${percentage}%"></div>
+                    </div>
+                    <p class="text-xs text-slate-400 mt-2">${course.completedTasks} / ${course.totalTasks} tasks completed</p>
+                </a>
+            `;
+        }
+    </script>
+</body>
+</html>

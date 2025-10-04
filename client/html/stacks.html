@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Learning Stacks - Robiz Route Ai</title>
+    <link rel="icon" type="image/png" href="../img/RR.png">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide-icons@latest/dist/lucide.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+    
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #0F172A; color: #E2E8F0; }
+        .gradient-text { background: linear-gradient(90deg, #60A5FA, #A78BFA); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .task-locked { opacity: 0.5; pointer-events: none; }
+        .day-completed, .module-completed { border-left-color: #22c55e !important; background-color: #16a34a20; }
+        .day-active, .module-active { background-color: #1e293b; border-left-color: #3b82f6 !important; }
+        .loader { border: 4px solid #334155; border-top: 4px solid #60A5FA; border-radius: 50%; width: 32px; height: 32px; animation: spin 1s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .prose-invert a { color: #60a5fa; }
+    </style>
+</head>
+<body class="animated-gradient-bg antialiased">
+
+    <!-- FINAL HEADER DESIGN -->
+    <header class="fixed top-0 left-0 right-0 w-full z-50 transition-all duration-300 pt-3 flex justify-center">
+        <div class="container mx-auto px-4 sm:px-6 max-w-6xl">
+             <div class="bg-black/30 backdrop-blur-lg border border-slate-800 rounded-full p-2 flex justify-between items-center">
+                <a href="/home.html" class="flex items-center gap-2 text-white pl-2 flex-shrink-0">
+                    <div class="w-9 h-9 bg-violet-600 rounded-full logo-pulse flex items-center justify-center font-bold text-sm flex-shrink-0">RR</div>
+                    <span class="text-lg font-bold sm:inline">Robiz Route Ai</span>
+                </a>
+                
+                <div class="flex items-center">
+                    <nav class="hidden md:flex items-center gap-6 text-slate-300 mr-4">
+                        <a href="/home.html" class="text-white font-semibold">Home</a>
+                        <a href="/features.html" class="hover:text-white transition-colors">Features</a>
+                        <a href="/stacks.html" class="hover:text-white transition-colors">Stacks</a>
+                        <a href="/pricing.html" class="hover:text-white transition-colors">Pricing</a>
+                        <a href="/contact.html" class="hover:text-white transition-colors">Contact</a>
+                    </nav>
+
+                    <div class="hidden md:flex items-center gap-2">
+                        <div id="auth-links">
+                            <a href="/login.html" class="text-slate-300 font-medium hover:text-white px-4 py-2">Login</a>
+                            <a href="/signup.html" class="bg-gradient-to-r from-violet-600 to-indigo-600 text-white font-semibold px-4 py-2 rounded-full hover:opacity-90">Sign Up</a>
+                        </div>
+                        <div id="profile-container" class="hidden relative pr-2">
+                            <button id="profile-btn" class="w-10 h-10 bg-violet-600 rounded-full flex items-center justify-center text-white font-bold text-lg"></button>
+                            <div id="profile-dropdown" class="absolute hidden mt-2 top-full right-0 bg-slate-800 border border-slate-700 rounded-lg shadow-lg z-10 w-48">
+                                <a href="/profile.html" class="block px-4 py-2 text-sm text-slate-200 hover:bg-slate-700">My Profile</a>
+                                <a href="#" id="logout-btn" class="block px-4 py-2 text-sm text-red-400 hover:bg-slate-700">Logout</a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="md:hidden pr-1">
+                         <button id="mobile-menu-btn" class="w-10 h-10 flex items-center justify-center bg-violet-600 rounded-full text-white z-50 transform transition-transform duration-300 hover:scale-110">
+                            <i id="menu-open-icon" data-lucide="menu" class="w-6 h-6"></i>
+                            <i id="menu-close-icon" data-lucide="x" class="w-6 h-6 hidden"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="relative pt-24">
+        <div id="stacks-grid-view"></div>
+        <div id="stack-modules-view" class="hidden"></div>
+        <div id="module-video-view" class="hidden"></div>
+        <div id="stack-detail-view" class="hidden"></div>
+    </main>
+    
+    <script>
+        (function() {
+            document.addEventListener('DOMContentLoaded', () => {
+                let allStacksData = [], currentStack = null, currentModule = null, userProgress = [];
+                const isLoggedIn = sessionStorage.getItem('isLoggedIn') === 'true';
+                const userId = sessionStorage.getItem('userId');
+                const userName = sessionStorage.getItem('userName');
+
+                const views = { grid: document.getElementById('stacks-grid-view'), modules: document.getElementById('stack-modules-view'), video: document.getElementById('module-video-view'), detail: document.getElementById('stack-detail-view') };
+                
+                const setupHeader = () => {
+                    const authLinks = document.getElementById('auth-links');
+                    const profileContainer = document.getElementById('profile-container');
+                    const profileBtn = document.getElementById('profile-btn');
+                    const profileDropdown = document.getElementById('profile-dropdown');
+                    const logoutBtn = document.getElementById('logout-btn');
+
+                    if (isLoggedIn && userName) {
+                        authLinks.classList.add('hidden');
+                        profileContainer.classList.remove('hidden');
+                        profileBtn.textContent = userName.charAt(0).toUpperCase();
+                    }
+                    
+                    if(profileBtn) profileBtn.addEventListener('click', () => profileDropdown.classList.toggle('hidden'));
+                    if(logoutBtn) logoutBtn.addEventListener('click', (e) => { e.preventDefault(); sessionStorage.clear(); window.location.href = '/login.html'; });
+                    window.addEventListener('click', (e) => { if (profileContainer && !profileContainer.contains(e.target)) profileDropdown.classList.add('hidden'); });
+                };
+
+                const switchView = (viewName) => { Object.values(views).forEach(v => v.classList.add('hidden')); if (views[viewName]) views[viewName].classList.remove('hidden'); };
+                
+                const initializeApp = async () => {
+                    setupHeader();
+                    renderStacksGrid();
+                    try {
+                        const response = await fetch('/api/stacks');
+                        if (!response.ok) throw new Error('Failed to fetch stacks');
+                        allStacksData = await response.json();
+                        renderStacksGrid(allStacksData);
+                    } catch (error) {
+                        views.grid.innerHTML = `<p class="text-center text-red-400 py-20">Could not load courses. Please try again later.</p>`;
+                    }
+                };
+                
+                const renderStacksGrid = (stacks = []) => {
+                    let content = stacks.length === 0 ? '<div class="loader mx-auto"></div>' : stacks.map(stack => `
+                        <div class="bg-slate-800/50 p-6 rounded-2xl border border-slate-700 flex flex-col hover:border-blue-500 transition-colors">
+                             <img src="${stack.details.image}" alt="${stack.name}" class="rounded-lg mb-4 h-40 object-cover">
+                            <h2 class="text-2xl font-bold text-white">${stack.name}</h2>
+                            <p class="text-slate-400 mb-4 flex-grow">${stack.description}</p>
+                            <button class="stack-btn w-full mt-auto bg-blue-500 text-white font-semibold py-2 rounded-lg hover:bg-blue-600" data-stack-id="${stack.id}">Start Learning</button>
+                        </div>`).join('');
+                    views.grid.innerHTML = `<section class="text-center py-12"><div class="container mx-auto px-6"><h1 class="text-4xl md:text-6xl font-extrabold text-white">Choose Your <span class="gradient-text">Learning Path</span></h1></div></section><section class="pb-20"><div class="container mx-auto px-6"><div id="stacks-container" class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">${content}</div></div></section>`;
+                    views.grid.querySelector('#stacks-container').addEventListener('click', e => { if (e.target.matches('.stack-btn')) { if (!isLoggedIn) { window.location.href = '/login.html'; return; } renderModulesView(e.target.dataset.stackId); }});
+                    switchView('grid');
+                };
+
+                const renderModulesView = async (stackId) => {
+                    currentStack = allStacksData.find(s => s.id === stackId);
+                    if (!currentStack) return;
+                     if (isLoggedIn) {
+                        const progressData = await (await fetch(`/api/progress/${userId}/${stackId}`)).json();
+                        userProgress = progressData.progress || [];
+                    }
+                    const modulesContent = currentStack.details.modules.map((module, index) => {
+                        const isModuleCompleted = module.curriculum.every(day => day.tasks.every((_, taskIndex) => userProgress.some(p => p.module_id === module.id && p.day === day.day && p.task_index === taskIndex)));
+                        return `<div class="module-card bg-slate-800/50 p-6 rounded-2xl border border-l-4 ${isModuleCompleted ? 'border-l-green-500' : 'border-l-slate-600'} cursor-pointer hover:border-blue-500" data-module-id="${module.id}">
+                                    <h3 class="text-xl font-bold pointer-events-none">${module.title}</h3>
+                                </div>`;
+                    }).join('');
+                    views.modules.innerHTML = `<section class="py-12"><div class="container mx-auto px-6"><button class="back-to-stacks-btn flex items-center gap-2 text-slate-400 hover:text-white mb-8"><i data-lucide="arrow-left"></i> Back to Stacks</button><h1 class="text-3xl font-bold text-white mb-6">${currentStack.name}</h1><div id="modules-container" class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">${modulesContent}</div></div></section>`;
+                    views.modules.querySelector('.back-to-stacks-btn').addEventListener('click', () => switchView('grid'));
+                    views.modules.querySelector('#modules-container').addEventListener('click', e => { const card = e.target.closest('.module-card'); if (card) renderVideoView(card.dataset.moduleId); });
+                    if (typeof lucide !== 'undefined') lucide.createIcons();
+                    switchView('modules');
+                };
+                
+                const renderVideoView = (moduleId) => {
+                    currentModule = currentStack.details.modules.find(m => m.id === moduleId);
+                    if(!currentModule) return;
+                    views.video.innerHTML = `<section class="py-12"><div class="container mx-auto px-6 max-w-4xl">
+                        <button class="back-to-modules-btn flex items-center gap-2 text-slate-400 hover:text-white mb-8"><i data-lucide="arrow-left"></i> Back to Modules</button>
+                        <h1 class="text-3xl font-bold text-white mb-4">${currentModule.title} - Introduction</h1>
+                        <div class="aspect-video bg-black rounded-lg mb-6"><iframe class="w-full h-full" src="https://www.youtube.com/embed/${currentModule.introVideoId}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></div>
+                        <button id="start-tasks-btn" class="w-full bg-blue-600 text-white font-semibold py-3 rounded-lg hover:bg-blue-700">Start Tasks</button>
+                    </div></section>`;
+                    views.video.querySelector('.back-to-modules-btn').addEventListener('click', () => renderModulesView(currentStack.id));
+                    views.video.querySelector('#start-tasks-btn').addEventListener('click', () => renderDetailView(moduleId));
+                    if (typeof lucide !== 'undefined') lucide.createIcons();
+                    switchView('video');
+                };
+
+                const renderDetailView = (moduleId) => {
+                    currentModule = currentStack.details.modules.find(m => m.id === moduleId);
+                    if(!currentModule) return;
+                    views.detail.innerHTML = `<section class="py-12"><div class="container mx-auto px-6"><button class="back-to-modules-btn flex items-center gap-2 text-slate-400 hover:text-white mb-8"><i data-lucide="arrow-left"></i> Back to Modules</button><div class="grid lg:grid-cols-12 gap-8"><div class="lg:col-span-4"><div class="bg-slate-800/50 p-6 rounded-2xl border border-slate-700 sticky top-28" id="curriculum-container"></div></div><div class="lg:col-span-8" id="day-content-container"></div></div></div></section>`;
+                    renderCurriculumAndDay();
+                    views.detail.querySelector('.back-to-modules-btn').addEventListener('click', () => renderModulesView(currentStack.id));
+                    if (typeof lucide !== 'undefined') lucide.createIcons();
+                    switchView('detail');
+                };
+
+                 const renderCurriculumAndDay = () => {
+                    const curriculumContainer = views.detail.querySelector('#curriculum-container');
+                    if (!currentModule || !currentModule.curriculum || currentModule.curriculum.length === 0) {
+                        curriculumContainer.innerHTML = `<h3 class="text-xl font-bold mb-4">${currentModule.title}</h3><p class="text-slate-400">No tasks available for this module yet.</p>`;
+                        views.detail.querySelector('#day-content-container').innerHTML = '';
+                        return;
+                    }
+
+                    const firstDay = currentModule.curriculum[0];
+                    const daysHTML = currentModule.curriculum.map(day => {
+                        const isDayCompleted = day.tasks.every((_, taskIndex) => userProgress.some(p => p.module_id === currentModule.id && p.day === day.day && p.task_index === taskIndex));
+                        return `<li><a href="#" class="day-link block p-3 rounded-lg border-l-4 ${isDayCompleted ? 'day-completed border-green-500' : 'border-slate-700'} hover:bg-slate-700 text-sm" data-day="${day.day}">Day ${day.day}</a></li>`;
+                    }).join('');
+
+                    curriculumContainer.innerHTML = `<h3 class="text-xl font-bold mb-4">${currentModule.title}</h3><ul class="space-y-1">${daysHTML}</ul>`;
+                    curriculumContainer.querySelectorAll('.day-link').forEach(link => link.addEventListener('click', e => { e.preventDefault(); renderDayContent(e.target.dataset.day); }));
+                    renderDayContent(firstDay.day);
+                };
+
+                const renderDayContent = (dayNumber) => {
+                    const dayData = currentModule.curriculum.find(d => d.day == dayNumber);
+                    const container = views.detail.querySelector('#day-content-container');
+                    if (!dayData) return;
+
+                    let isPreviousTaskCompleted = true; 
+                    const tasksContent = dayData.tasks.map((task, taskIndex) => {
+                        const isTaskCompleted = userProgress.some(p => p.module_id === currentModule.id && p.day == dayNumber && p.task_index === taskIndex);
+                        const isLocked = !isPreviousTaskCompleted;
+                        if (!isLocked) {
+                           isPreviousTaskCompleted = isTaskCompleted; 
+                        }
+
+                        return `
+                        <div class="task-container bg-slate-800 p-6 rounded-lg mb-6 border-l-4 ${isLocked ? 'border-slate-600 task-locked' : (isTaskCompleted ? 'border-green-500' : 'border-blue-500')}">
+                            <h3 class="font-semibold text-lg ${isLocked ? 'text-slate-500' : 'text-blue-300'} mb-2 flex items-center gap-2">
+                                ${isLocked ? '<i data-lucide="lock" class="w-4 h-4"></i>' : ''}
+                                Task ${taskIndex + 1}: ${task.title}
+                            </h3>
+                            <div class="text-slate-400 mb-4 prose max-w-none prose-invert">${marked.parse(task.description || '')}</div>
+                            ${!isTaskCompleted ? `
+                            <form class="task-submission-form" data-day="${dayNumber}" data-task-index="${taskIndex}">
+                                <div class="bg-slate-900 rounded-lg p-2 mb-2"><textarea class="w-full h-40 bg-transparent text-slate-300 font-mono text-sm focus:outline-none p-2" placeholder="Your code here..."></textarea></div>
+                                <div class="flex items-center gap-4">
+                                    <button type="submit" class="bg-blue-600 text-white font-semibold py-2 px-6 rounded-lg hover:bg-blue-700">Submit Task</button>
+                                    <button type="button" class="fill-solution-btn text-sm text-slate-400 hover:text-white">Fill Solution</button>
+                                </div>
+                            </form>` : `<div class="p-4 bg-green-900/50 text-green-300 rounded-lg">Task Completed! You earned ${task.points || 10} points.</div>`}
+                            <div class="ai-feedback-container mt-4 hidden"></div>
+                        </div>`;
+                    }).join('');
+                    container.innerHTML = `<div class="bg-slate-800/50 p-8 rounded-2xl border border-slate-700"><h2 class="text-2xl font-bold mb-4">${currentModule.title} - Day ${dayNumber}</h2>${tasksContent}</div>`;
+                    
+                    if (typeof lucide !== 'undefined') {
+                        lucide.createIcons();
+                    }
+                    
+                    views.detail.querySelectorAll('.day-link.day-active').forEach(el => el.classList.remove('day-active'));
+                    const activeLink = views.detail.querySelector(`.day-link[data-day="${dayNumber}"]`);
+                    if(activeLink) activeLink.classList.add('day-active');
+                    
+                    container.querySelectorAll('.task-submission-form').forEach(form => form.addEventListener('submit', e => { e.preventDefault(); submitTask(form); }));
+                    container.querySelectorAll('.fill-solution-btn').forEach(btn => {
+                        btn.addEventListener('click', (e) => {
+                            const form = e.target.closest('form');
+                            const taskIndex = form.dataset.taskIndex;
+                            const task = dayData.tasks[taskIndex];
+                            if(task.solution) {
+                                form.querySelector('textarea').value = task.solution;
+                            }
+                        });
+                    });
+                };
+
+                const submitTask = async (form) => {
+                    const day = form.dataset.day;
+                    const taskIndex = parseInt(form.dataset.taskIndex);
+                    const codeContent = form.querySelector('textarea').value;
+                    const feedbackContainer = form.parentElement.querySelector('.ai-feedback-container');
+                    feedbackContainer.classList.remove('hidden');
+                    feedbackContainer.innerHTML = '<div class="loader mx-auto"></div>';
+                    try {
+                         const response = await fetch('/api/submit-task', { 
+                            method: 'POST', 
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ userId, stackId: currentStack.id, moduleId: currentModule.id, day, taskIndex, codeContent })
+                        });
+                        const result = await response.json();
+                        feedbackContainer.innerHTML = `<div class="p-4 bg-slate-900 rounded-lg border border-slate-700 prose max-w-none prose-invert">${marked.parse(result.feedback)}</div>`;
+                        if (result.status === 'approved') {
+                            userProgress.push({ module_id: currentModule.id, day: parseInt(day), task_index: taskIndex });
+                            renderDayContent(day);
+                            renderCurriculumAndDay();
+                        }
+                    } catch (error) {
+                         feedbackContainer.innerHTML = `<div class="p-4 bg-red-900/50 text-red-300 rounded-lg">Error submitting task.</div>`;
+                    }
+                };
+                
+                initializeApp();
+            });
+        })();
+    </script>
+</body>
+</html>
+

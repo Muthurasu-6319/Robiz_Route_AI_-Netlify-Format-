@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome - Robiz Route Ai</title>
+    <link rel="icon" type="image/png" href="../img/RR.png">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide-icons@latest/dist/lucide.js"></script>
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #000000;
+            color: #e2e8f0;
+        }
+        .animated-gradient-bg {
+            background: linear-gradient(-45deg, #000000, #0d011a, #000000, #130f1a);
+            background-size: 400% 400%;
+            animation: gradientBG 15s ease infinite;
+        }
+        @keyframes gradientBG {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        @keyframes pulse {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(167, 139, 250, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(167, 139, 250, 0); }
+        }
+        .logo-pulse { animation: pulse 2.5s infinite; }
+        .form-container { display: none; }
+        .form-container.active { display: block; animation: fadeIn 0.5s; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body class="animated-gradient-bg antialiased flex items-center justify-center min-h-screen p-4">
+    <div class="w-full max-w-md mx-auto">
+        <div class="text-center mb-8">
+            <a href="/home.html" class="text-2xl font-bold flex items-center justify-center gap-3 text-white">
+                <div class="w-10 h-10 bg-violet-600 rounded-full logo-pulse flex items-center justify-center font-bold text-lg flex-shrink-0">RR</div>
+                Robiz Route Ai
+            </a>
+            <p id="page-subtitle" class="text-slate-400 mt-2 transition-all duration-300">Welcome back! Please login to your account.</p>
+        </div>
+        <div class="bg-black/30 backdrop-blur-lg border border-slate-800 rounded-2xl p-8 shadow-2xl shadow-violet-900/20">
+            <div id="message-container" class="mb-4 text-center text-sm"></div>
+
+            <!-- Login Form -->
+            <div id="login-view" class="form-container active">
+                <form id="login-form" class="space-y-6">
+                    <div>
+                        <label for="login-email" class="block text-sm font-medium text-slate-300 mb-2">Email Address</label>
+                        <input type="email" id="login-email" class="w-full bg-slate-800 border border-slate-700 rounded-full px-5 py-3 text-white focus:outline-none focus:ring-2 focus:ring-violet-500" placeholder="you@example.com" required>
+                    </div>
+                    <div>
+                        <label for="login-password" class="block text-sm font-medium text-slate-300 mb-2">Password</label>
+                        <input type="password" id="login-password" class="w-full bg-slate-800 border border-slate-700 rounded-full px-5 py-3 text-white focus:outline-none focus:ring-2 focus:ring-violet-500" placeholder="••••••••" required>
+                    </div>
+                    <button type="submit" class="w-full bg-gradient-to-r from-violet-600 to-indigo-600 text-white font-semibold py-3 rounded-full hover:opacity-90 transition-opacity">Login</button>
+                </form>
+                <p class="text-center text-slate-400 text-sm mt-6">
+                    Don't have an account? <a href="#" id="show-signup" class="font-semibold text-violet-400 hover:underline">Sign up</a>
+                </p>
+            </div>
+
+            <!-- Signup Form -->
+            <div id="signup-view" class="form-container">
+                <form id="signup-form" class="space-y-6">
+                    <div>
+                        <label for="signup-name" class="block text-sm font-medium text-slate-300 mb-2">Full Name</label>
+                        <input type="text" id="signup-name" class="w-full bg-slate-800 border border-slate-700 rounded-full px-5 py-3 text-white focus:outline-none focus:ring-2 focus:ring-violet-500" placeholder="Your Name" required>
+                    </div>
+                    <div>
+                        <label for="signup-email" class="block text-sm font-medium text-slate-300 mb-2">Email Address</label>
+                        <input type="email" id="signup-email" class="w-full bg-slate-800 border border-slate-700 rounded-full px-5 py-3 text-white focus:outline-none focus:ring-2 focus:ring-violet-500" placeholder="you@example.com" required>
+                    </div>
+                    <div>
+                        <label for="signup-password" class="block text-sm font-medium text-slate-300 mb-2">Password</label>
+                        <input type="password" id="signup-password" class="w-full bg-slate-800 border border-slate-700 rounded-full px-5 py-3 text-white focus:outline-none focus:ring-2 focus:ring-violet-500" placeholder="••••••••" required>
+                    </div>
+                    <button type="submit" class="w-full bg-gradient-to-r from-violet-600 to-indigo-600 text-white font-semibold py-3 rounded-full hover:opacity-90 transition-opacity">Create Account</button>
+                </form>
+                 <p class="text-center text-slate-400 text-sm mt-6">
+                    Already have an account? <a href="#" id="show-login" class="font-semibold text-violet-400 hover:underline">Login</a>
+                </p>
+            </div>
+        </div>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const loginView = document.getElementById('login-view');
+            const signupView = document.getElementById('signup-view');
+            const showSignupBtn = document.getElementById('show-signup');
+            const showLoginBtn = document.getElementById('show-login');
+            const pageSubtitle = document.getElementById('page-subtitle');
+            const messageContainer = document.getElementById('message-container');
+
+            const toggleForms = (show) => {
+                messageContainer.innerHTML = '';
+                if (show === 'signup') {
+                    loginView.classList.remove('active');
+                    signupView.classList.add('active');
+                    pageSubtitle.textContent = 'Create an account to start your journey.';
+                } else {
+                    signupView.classList.remove('active');
+                    loginView.classList.add('active');
+                    pageSubtitle.textContent = 'Welcome back! Please login to your account.';
+                }
+            };
+
+            showSignupBtn.addEventListener('click', (e) => { e.preventDefault(); toggleForms('signup'); });
+            showLoginBtn.addEventListener('click', (e) => { e.preventDefault(); toggleForms('login'); });
+
+            document.getElementById('login-form').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const email = document.getElementById('login-email').value;
+                const password = document.getElementById('login-password').value;
+
+                try {
+                    const response = await fetch('/api/login', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ email, password })
+                    });
+                    const data = await response.json();
+                    
+                    if (response.ok) {
+                        messageContainer.textContent = data.message;
+                        messageContainer.className = 'mb-4 text-center text-sm font-medium text-green-400';
+                        sessionStorage.setItem('isLoggedIn', 'true');
+                        sessionStorage.setItem('userName', data.userName);
+                        sessionStorage.setItem('userId', data.userId);
+                        if (data.isAdmin) {
+                            window.location.href = '/admin.html';
+                        } else {
+                            window.location.href = '/stacks.html';
+                        }
+                    } else {
+                        messageContainer.textContent = data.message;
+                        messageContainer.className = 'mb-4 text-center text-sm font-medium text-red-400';
+                        if (response.status === 404) {
+                            setTimeout(() => toggleForms('signup'), 2000);
+                        }
+                    }
+                } catch (error) {
+                    messageContainer.textContent = 'An error occurred. Please try again.';
+                    messageContainer.className = 'mb-4 text-center text-sm font-medium text-red-400';
+                }
+            });
+
+            document.getElementById('signup-form').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const name = document.getElementById('signup-name').value;
+                const email = document.getElementById('signup-email').value;
+                const password = document.getElementById('signup-password').value;
+
+                try {
+                    const response = await fetch('/api/signup', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ name, email, password })
+                    });
+                    const data = await response.json();
+
+                    if (response.ok) {
+                        messageContainer.textContent = data.message;
+                        messageContainer.className = 'mb-4 text-center text-sm font-medium text-green-400';
+                        setTimeout(() => toggleForms('login'), 2000);
+                    } else {
+                        messageContainer.textContent = data.message;
+                        messageContainer.className = 'mb-4 text-center text-sm font-medium text-red-400';
+                    }
+                } catch (error) {
+                    messageContainer.textContent = 'An error occurred. Please try again.';
+                    messageContainer.className = 'mb-4 text-center text-sm font-medium text-red-400';
+                }
+            });
+            if (typeof lucide !== 'undefined') lucide.createIcons();
+        });
+    </script>
+</body>
+</html>
