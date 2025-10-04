@@ -1,94 +1,83 @@
-# Robiz Route Ai - AI Career Guide
+Robiz Route Ai - AI Career Guide
+Introduction
+Robiz Route Ai is an AI-powered online learning platform designed for individuals aspiring to start or advance their careers in the technology sector. It offers personalized learning roadmaps tailored to users' skills and goals, leveraging artificial intelligence to guide them through their educational journey.
 
-## Introduction
+Key Features
+AI Career Counselor: An interactive AI chatbot that answers user queries and provides career guidance.
 
-**Robiz Route Ai** is an AI-powered online learning platform designed for individuals aspiring to start or advance their careers in the technology sector. It offers personalized learning roadmaps tailored to users' skills and goals, leveraging artificial intelligence to guide them through their educational journey.
+Structured Learning Stacks: Day-wise curated curriculum for various tech domains like Full Stack Development, AI/ML, and more.
 
-## Key Features
+AI-Powered Code Review: Instant feedback on student code submissions using the Google Gemini AI, ensuring timely learning.
 
-* **AI Career Counselor:** An interactive AI chatbot that answers user queries and provides career guidance.
-* **Structured Learning Stacks:** Day-wise curated curriculum for various tech domains like Full Stack Development, AI/ML, and more.
-* **AI-Powered Code Review:** Instant feedback on student code submissions using the Google Gemini AI, ensuring timely learning.
-* **User Profile & Gamification:** Users can track their learning progress, earn points for completing tasks, and unlock achievements.
-* **Admin Dashboard:** A comprehensive interface for administrators to manage users, learning stacks, and pricing plans.
+User Profile & Gamification: Users can track their learning progress, earn points for completing tasks, and unlock achievements.
 
-## Tech Stack
+Admin Dashboard: A comprehensive interface for administrators to manage users, learning stacks, and pricing plans.
 
-* **Frontend:**
-    * HTML5
-    * Tailwind CSS
-    * Vanilla JavaScript
-* **Backend:**
-    * Node.js
-    * Express.js
-* **Database:**
-    * TiDB Cloud (MySQL compatible)
-* **External Services:**
-    * Google Gemini API (for AI chatbot and code review)
-    * EmailJS (for contact form functionality)
+Tech Stack
+Frontend: HTML5, Tailwind CSS, Vanilla JavaScript
 
-## Setup Instructions
+Backend: Node.js, Express.js
 
-### Prerequisites
+Database: TiDB Cloud (MySQL compatible)
 
-* Node.js and npm installed.
-* A TiDB Cloud account.
+External Services: Google Gemini API, EmailJS
 
-### Installation
+Setup Instructions
+Prerequisites
+Node.js and npm installed.
 
-1.  **Clone the repository:**
-    ```bash
-    git clone <your-repository-url>
-    cd <your-project-folder>
-    ```
+A TiDB Cloud account.
 
-2.  **Install backend dependencies:**
-    ```bash
-    cd server
-    npm install
-    ```
+A Google Gemini API Key.
 
-### Database Setup
+Installation
+Clone the repository:
 
-1.  This project is configured to connect with TiDB Cloud.
-2.  Create a database named `ai_career_guide_db` in your TiDB Cloud cluster.
-3.  Create the following tables. (Note: Column types may need adjustment based on your specific requirements).
-    * `users` (id, name, email, password, status, points, last_login, created_at, etc.)
-    * `stacks` (id, name, description, details - JSON)
-    * `user_progress` (id, user_id, stack_id, module_id, day, task_index)
-    * `pricing` (id, name, price, type, features - JSON, status)
+git clone <your-repository-url>
+cd <your-project-folder>
 
-4.  Upon the first run of `server.js`, if the `stacks` table is empty, initial course data will be seeded automatically.
+Install backend dependencies:
 
-## Configuration
+npm install
 
-For production environments, it is highly recommended to use environment variables for sensitive information instead of hardcoding them.
+Environment Setup
+Create a .env file in the root of your project.
 
-* **TiDB Cloud Credentials:** Update the `db` connection object in `server/server.js` with your TiDB host, user, password, and database name.
-* **Gemini API Key:**
-    * For Code Review: Replace the placeholder API key within the `getGeminiCodeReview` function in `server/server.js`.
-    * For Chatbot: Replace the placeholder API key in the `Chatbot Logic` section within `client/html/home.html`.
-* **EmailJS Credentials:** Update the `service ID`, `template ID`, and `public key` in the `EMAILJS INTEGRATION` section within `client/html/contact.html`.
+Add the following variables to your .env file with your actual credentials:
 
-## Running the Project
+GEMINI_API_KEY=YOUR_GEMINI_API_KEY
+PORT=3000
+DB_HOST=YOUR_TIDB_HOST
+DB_PORT=4000
+DB_USER=YOUR_TIDB_USER
+DB_PASSWORD=YOUR_TIDB_PASSWORD
+DB_DATABASE=YOUR_TIDB_DATABASE
+ADMIN_EMAIL=your_admin_email@example.com
+ADMIN_PASS=your_strong_admin_password
 
-1.  Navigate to the `server` directory:
-    ```bash
-    cd server
-    ```
+Database Setup
+This project is configured to connect with TiDB Cloud.
 
-2.  Start the backend server:
-    ```bash
-    node server.js
-    ```
+Create a database named ai_career_guide_db (or the name you specified in .env) in your TiDB Cloud cluster.
 
-3.  Open your web browser and go to `http://localhost:3000` to access the application.
+Create the necessary tables (users, stacks, user_progress, pricing).
 
-## Project Structure
+The admin user from your .env file will be created automatically on the first run if it doesn't exist.
 
+Running the Project Locally
+Start the development server from the root directory:
 
- host: 'gateway01.ap-southeast-1.prod.aws.tidbcloud.com',
-    port: 4000,
-    user: '4RdRyRGHpMek4m9.root',
-    password: 'JZaaDLqIEZiCla7I',
-    database: 'ai_career_guide_db',
+npm start
+
+Open your browser and go to http://localhost:8888 to access the application.
+
+Deployment to Netlify
+Push your code to a GitHub repository (ensure your .env file is NOT pushed by using .gitignore).
+
+Connect your repository to a new site on Netlify.
+
+Crucial Step: In your Netlify site dashboard, go to Site settings > Build & deploy > Environment variables.
+
+Add all the environment variables from your local .env file one by one (e.g., Key: DB_HOST, Value: your-tidb-host-value).
+
+Trigger a new deploy. Your site should now build and deploy successfully.
