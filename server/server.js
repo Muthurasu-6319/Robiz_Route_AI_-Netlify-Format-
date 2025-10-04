@@ -4,31 +4,35 @@ const mysql = require('mysql');
 const bcrypt = require('bcrypt');
 const fs = require('fs');
 const path = require('path');
-const fetch = require('node-fetch'); // node-fetch package-ah import panrom
-// .env file-ah load panrom
+const fetch = require('node-fetch');
 require('dotenv').config({ path: path.join(__dirname, '..', '.env') });
-
 
 const app = express();
 app.use(cors());
 app.use(express.json());
 
-// client/html folder-la irundhu static files-ah serve panrom
 const clientPath = path.join(__dirname, '..', 'client', 'html');
 app.use(express.static(clientPath));
 
-
 // --- Database Connection ---
-const db = mysql.createConnection({
+// Netlify-la host pannum podhu, environment variables-ah athonave eduthukkum
+const dbConfig = {
     host: process.env.DB_HOST,
     port: process.env.DB_PORT,
     user: process.env.DB_USER,
     password: process.env.DB_PASSWORD,
     database: process.env.DB_DATABASE,
-    ssl: {
+};
+
+// Local-la run pannum podhu mattum SSL certificate-ah use panrom
+if (!process.env.NETLIFY) {
+    dbConfig.ssl = {
         ca: fs.readFileSync(path.join(__dirname, '..', 'isrgrootx1.pem'))
-    }
-});
+    };
+}
+
+const db = mysql.createConnection(dbConfig);
+
 
 const saltRounds = 10;
 const runQuery = (query, params) => {
@@ -40,7 +44,6 @@ const runQuery = (query, params) => {
     });
 };
 
-// --- App start aagum podhu admin user-ah create panra function ---
 const setupAdminUser = async () => {
     try {
         const adminEmail = process.env.ADMIN_EMAIL;
@@ -58,7 +61,6 @@ const setupAdminUser = async () => {
             await runQuery('INSERT INTO users (name, email, password, status) VALUES (?, ?, ?, ?)', ['Admin', adminEmail, hashedPassword, 'Active']);
             console.log('Admin user created successfully.');
         } else {
-            // .env file-la irukura password veraiya irundha update panrom
             const isMatch = await bcrypt.compare(adminPass, existingAdmin.password);
             if (!isMatch) {
                 const hashedPassword = await bcrypt.hash(adminPass, saltRounds);
@@ -77,11 +79,9 @@ db.connect(err => {
         return;
     }
     console.log('Connected to TiDB Cloud!');
-    setupAdminUser(); // DB connect aanadhuku aprom admin setup-ah run panrom
+    setupAdminUser();
 });
 
-
-// --- DB-la irundhu vara JSON details-ah parse panra helper function ---
 const parseStackDetails = (stacks) => {
     return stacks.map(stack => {
         try {
@@ -90,19 +90,16 @@ const parseStackDetails = (stacks) => {
             }
         } catch (e) {
             console.error(`Could not parse details for stack ID ${stack.id}:`, e);
-            // Frontend crash aagama irukka, oru default structure-ah kudukrom
             stack.details = { modules: [], image: '' };
         }
         return stack;
     });
 };
 
-// --- Gemini API Call for AI Code Review ---
 const getGeminiCodeReview = async (codeContent, taskDescription) => {
     const API_KEY = process.env.GEMINI_API_KEY;
     const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${API_KEY}`;
     
-    // AI-ku theliva puriyura maari prompt-ah maathrom
     const systemPrompt = `You are an expert code reviewer. Your task is to evaluate a user's code submission against a given task.
     The required task was: "${taskDescription}".
     The user submitted the following code:
@@ -147,7 +144,6 @@ const getGeminiCodeReview = async (codeContent, taskDescription) => {
 
         const text = result.candidates[0].content.parts[0].text;
 
-        // AI response-la irundhu status and feedback-ah pirikrom
         let status = 'rejected';
         let feedback = text;
 
@@ -170,7 +166,6 @@ const getGeminiCodeReview = async (codeContent, taskDescription) => {
     }
 };
 
-// --- Chatbot API Endpoint ---
 app.post('/api/chat', async (req, res) => {
     const { history, prompt } = req.body;
     const API_KEY = process.env.GEMINI_API_KEY;
@@ -198,8 +193,6 @@ app.post('/api/chat', async (req, res) => {
     }
 });
 
-
-// --- Authentication Routes ---
 app.post('/api/signup', async (req, res) => {
     try {
         const { name, email, password } = req.body;
@@ -247,7 +240,6 @@ app.post('/api/login', async (req, res) => {
     }
 });
 
-// --- Stacks/Courses Routes (for users) ---
 app.get('/api/stacks', async (req, res) => {
     try {
         const stacks = await runQuery('SELECT * FROM stacks');
@@ -268,12 +260,10 @@ app.get('/api/progress/:userId/:stackId', async (req, res) => {
     }
 });
 
-
 app.post('/api/submit-task', async (req, res) => {
     const { userId, stackId, moduleId, day, taskIndex, codeContent } = req.body;
 
     try {
-        // Task description-ah eduthu AI kitta anuprom
         const stacksResult = await runQuery('SELECT details FROM stacks WHERE id = ?', [stackId]);
         if (stacksResult.length === 0) return res.status(404).json({ message: "Stack not found." });
         
@@ -288,10 +278,8 @@ app.post('/api/submit-task', async (req, res) => {
 
         if (feedbackResponse.status === 'approved') {
             const taskPoints = task.points || 10;
-
             const insertProgressQuery = 'INSERT IGNORE INTO user_progress (user_id, stack_id, module_id, day, task_index) VALUES (?, ?, ?, ?, ?)';
             await runQuery(insertProgressQuery, [userId, stackId, moduleId, day, taskIndex]);
-
             const updateUserPointsQuery = 'UPDATE users SET points = points + ? WHERE id = ?';
             await runQuery(updateUserPointsQuery, [taskPoints, userId]);
         }
@@ -307,8 +295,6 @@ app.post('/api/submit-task', async (req, res) => {
     }
 });
 
-
-// --- Profile Page Route ---
 app.get('/api/profile/:userId', async (req, res) => {
     try {
         const { userId } = req.params;
@@ -352,8 +338,6 @@ app.get('/api/profile/:userId', async (req, res) => {
     }
 });
 
-
-// --- ADMIN ROUTES ---
 app.get('/api/admin/dashboard', async (req, res) => {
     try {
         const [totalUsers] = await runQuery('SELECT COUNT(*) as count FROM users');
@@ -509,11 +493,9 @@ app.delete('/api/admin/pricing/:id', async (req, res) => {
     }
 });
 
-// Vera endha GET request-kum home.html-ah anuppurom
 app.get('*', (req, res) => {
     res.sendFile(path.join(clientPath, 'home.html'));
 });
 
-// serverless-http-kaga export panrom
 module.exports = app;
 
