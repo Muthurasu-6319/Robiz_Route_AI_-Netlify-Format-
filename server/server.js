@@ -15,21 +15,18 @@ const clientPath = path.join(__dirname, '..', 'client', 'html');
 app.use(express.static(clientPath));
 
 // --- Database Connection ---
-// Netlify-la host pannum podhu, environment variables-ah athonave eduthukkum
+// Eppovume SSL certificate use panra maari maathirukken
 const dbConfig = {
     host: process.env.DB_HOST,
     port: process.env.DB_PORT,
     user: process.env.DB_USER,
     password: process.env.DB_PASSWORD,
     database: process.env.DB_DATABASE,
-};
-
-// Local-la run pannum podhu mattum SSL certificate-ah use panrom
-if (!process.env.NETLIFY) {
-    dbConfig.ssl = {
+    ssl: {
+        // isrgrootx1.pem file project-oda root folder-la irukkanum
         ca: fs.readFileSync(path.join(__dirname, '..', 'isrgrootx1.pem'))
-    };
-}
+    }
+};
 
 const db = mysql.createConnection(dbConfig);
 
